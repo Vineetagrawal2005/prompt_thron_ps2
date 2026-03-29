@@ -1,6 +1,10 @@
+import io
 import os
 import numpy as np
-from flask import Flask, request, jsonify, after_this_request
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from flask import Flask, request, jsonify, after_this_request, send_file
 from werkzeug.utils import secure_filename
 
 from parser import parse_floor_plan, _fallback_geometry
@@ -8,6 +12,9 @@ from geometry import reconstruct_geometry
 from material import recommend_materials
 
 app = Flask(__name__)
+
+# store latest wall data so /graph can render consistent visual
+last_floor_plan_walls = None
 
 UPLOAD_FOLDER = "/tmp/asis_uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -30,6 +37,54 @@ def after_request(response):
 @app.route("/health", methods=["GET", "OPTIONS"])
 def health():
     return jsonify({"status": "ok", "service": "ASIS"})
+
+
+def _render_floor_plan_graph(walls):
+    """Generate 2D floor plan visualization from wall data."""
+    fig, ax = plt.subplots(figsize=(5, 5), dpi=100)
+
+    # Extract and plot walls by type
+    for w in walls:
+        if isinstance(w, dict):
+            x1, y1, x2, y2 = w["coords"]
+            wall_type = w.get("type", "partition")
+        else:
+            x1, y1, x2, y2 = w
+
+        # Color by wall type
+        color = "#ff4455" if (isinstance(w, dict) and w.get("type") == "load_bearing") else "#00cc66"
+        linewidth = 2.0 if (isinstance(w, dict) and w.get("type") == "load_bearing") else 1.0
+
+        ax.plot([x1, x2], [y1, y2], color=color, linewidth=linewidth, alpha=0.8)
+
+        # Plot endpoints as nodes
+        ax.scatter([x1, x2], [y1, y2], color="#0077cc", s=16, zorder=5)
+
+    ax.set_aspect("equal", adjustable="box")
+    ax.invert_yaxis()
+    ax.axis("off")
+    ax.set_facecolor("#0f1318")
+    fig.patch.set_facecolor("#0f1318")
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight", pad_inches=0.06, facecolor="#0f1318")
+    plt.close(fig)
+    buf.seek(0)
+    return buf
+
+
+def _save_floor_plan_graph(walls, filename="graph.png"):
+    buf = _render_floor_plan_graph(walls)
+    with open(filename, "wb") as f:
+        f.write(buf.getbuffer())
+
+
+@app.route("/graph", methods=["GET"])
+def graph():
+    if not os.path.exists("graph.png"):
+        parse_result = _fallback_geometry()
+        _save_floor_plan_graph(parse_result.get("walls", []), "graph.png")
+    return send_file("graph.png", mimetype="image/png")
 
 
 def _build_response(parse_result):
@@ -113,7 +168,13 @@ def analyze():
             image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             file.save(image_path)
 
+    global last_floor_plan_walls
     parse_result = parse_floor_plan(image_path) if image_path else _fallback_geometry()
+    last_floor_plan_walls = parse_result.get("walls", [])
+
+    # Save snapshot graph for frontend to load from /graph
+    _save_floor_plan_graph(last_floor_plan_walls, "graph.png")
+
     return jsonify(_build_response(parse_result))
 
 

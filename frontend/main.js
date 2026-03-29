@@ -8,10 +8,10 @@ const uploadZone   = document.getElementById('upload-zone');
 const fileInput    = document.getElementById('file-input');
 const previewImg   = document.getElementById('preview-img');
 const btnAnalyze   = document.getElementById('btn-analyze');
-const btnSample    = document.getElementById('btn-sample');
 const logArea      = document.getElementById('log-area');
 const matList      = document.getElementById('materials-list');
 const loadingMsg   = document.getElementById('loading-msg');
+const graphImg     = document.getElementById('graph-img');
 const statusDot    = document.getElementById('status-dot');
 const statusLabel  = document.getElementById('status-label');
 const tooltip      = document.getElementById('tooltip');
@@ -310,32 +310,27 @@ function handleFileSelect(file) {
 }
 
 // ─── Analysis ────────────────────────────────────────────────────────────────
-async function runAnalysis(useSample = false) {
+async function runAnalysis() {
+  if (!selectedFile) {
+    log('Please select a floor plan image first.', 'err');
+    return;
+  }
+
   btnAnalyze.disabled = true;
-  btnSample.disabled = true;
   loadingMsg.textContent = 'PROCESSING...';
   loadingMsg.style.display = 'block';
   statusDot.classList.remove('active');
   statusLabel.textContent = 'ANALYZING';
 
-  log(useSample ? 'Loading sample floor plan...' : 'Uploading image for analysis...', 'info');
+  log('Uploading image for analysis...', 'info');
 
   try {
-    let data;
-
-    if (useSample) {
-      log('GET /sample', 'dim');
-      const res = await fetch(`${API_BASE}/sample`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      data = await res.json();
-    } else {
-      const formData = new FormData();
-      formData.append('image', selectedFile);
-      log('POST /analyze', 'dim');
-      const res = await fetch(`${API_BASE}/analyze`, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      data = await res.json();
-    }
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+    log('POST /analyze', 'dim');
+    const res = await fetch(`${API_BASE}/analyze`, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
 
     const meta = data.meta;
     log(`Source: ${meta.source.toUpperCase()}`, 'dim');
@@ -359,6 +354,10 @@ async function runAnalysis(useSample = false) {
     statusLabel.textContent = 'COMPLETE';
     log('Pipeline complete ✓', 'ok');
 
+    if (graphImg) {
+      graphImg.src = `${API_BASE}/graph?ts=${Date.now()}`;
+    }
+
   } catch (err) {
     log(`Error: ${err.message}`, 'err');
     log('Is the backend running? (python app.py)', 'err');
@@ -366,12 +365,10 @@ async function runAnalysis(useSample = false) {
     statusLabel.textContent = 'ERROR';
   } finally {
     btnAnalyze.disabled = !selectedFile;
-    btnSample.disabled = false;
   }
 }
 
-btnAnalyze.addEventListener('click', () => runAnalysis(false));
-btnSample.addEventListener('click', () => runAnalysis(true));
+btnAnalyze.addEventListener('click', () => runAnalysis());
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 async function checkHealth() {

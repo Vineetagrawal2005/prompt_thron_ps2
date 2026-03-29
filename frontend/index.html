@@ -73,7 +73,8 @@
       background: var(--panel);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
-      overflow: hidden;
+      overflow-y: auto;
+      height: 100vh;
     }
 
     .panel-section {
@@ -269,6 +270,17 @@
     .mat-card.selected .mat-explain { display: block; }
     .mat-explain strong { color: var(--accent); }
 
+    /* Graph visualization */
+    #graph-container, #graph-section {
+      margin-top: 10px;
+    }
+    #graph-img {
+      width: 100%;
+      max-width: 250px;
+      display: block;
+      margin: 0 auto;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -319,7 +331,13 @@
     <div class="panel-section">
       <div class="btn-row">
         <button class="btn btn-primary" id="btn-analyze" disabled>▶ Analyze</button>
-        <button class="btn btn-ghost" id="btn-sample">Sample</button>
+      </div>
+    </div>
+
+    <div class="panel-section" id="graph-section" style="padding:10px;">
+      <div class="panel-title">Floor Plan Graph</div>
+      <div style="display:flex;justify-content:center;align-items:center;">
+        <img id="graph-img" src="http://127.0.0.1:5050/graph" style="width:100%;max-height:170px;object-fit:contain;border:1px solid var(--border2);border-radius:4px;" alt="Graph" />
       </div>
     </div>
 
