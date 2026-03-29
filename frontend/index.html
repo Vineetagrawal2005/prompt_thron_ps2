@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASIS — Autonomous Structural Intelligence System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0c10;
+      --bg2: #0f1318;
+      --bg3: #141920;
+      --panel: #111620;
+      --border: #1e2a38;
+      --border2: #243244;
+      --accent: #00d4ff;
+      --accent2: #0099cc;
+      --red: #ff4455;
+      --green: #00e676;
+      --yellow: #ffd740;
+      --text: #c8d8e8;
+      --text2: #7890a0;
+      --text3: #4a6070;
+      --lb-color: #ff4455;
+      --pt-color: #00e676;
+      --font-mono: 'Space Mono', monospace;
+      --font-head: 'Rajdhani', sans-serif;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-head); overflow: hidden; }
+
+    /* ── Header ── */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 52px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 20px; padding: 0 20px;
+    }
+    .logo {
+      font-family: var(--font-mono); font-size: 13px; color: var(--accent);
+      letter-spacing: 2px; white-space: nowrap;
+    }
+    .logo span { color: var(--text2); }
+    .header-divider { width: 1px; height: 24px; background: var(--border2); }
+    .header-tag {
+      font-size: 11px; font-family: var(--font-mono); color: var(--text3);
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .header-spacer { flex: 1; }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--text3);
+      transition: background 0.3s;
+    }
+    .status-dot.active { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .status-label { font-size: 11px; font-family: var(--font-mono); color: var(--text3); }
+
+    /* ── Layout ── */
+    #app {
+      display: grid;
+      grid-template-columns: 320px 1fr 300px;
+      grid-template-rows: 1fr;
+      height: 100vh;
+      padding-top: 52px;
+    }
+
+    /* ── Left Panel ── */
+    #left-panel {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-section {
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+    }
+    .panel-title {
+      font-size: 10px; font-family: var(--font-mono); color: var(--text3);
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title::after {
+      content: ''; flex: 1; height: 1px; background: var(--border2);
+    }
+
+    /* Upload zone */
+    #upload-zone {
+      border: 1.5px dashed var(--border2);
+      border-radius: 4px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    #upload-zone:hover, #upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, 0.03);
+    }
+    #upload-zone input { display: none; }
+    .upload-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.5; }
+    .upload-text { font-size: 12px; color: var(--text2); font-family: var(--font-mono); }
+    .upload-sub { font-size: 10px; color: var(--text3); margin-top: 4px; }
+    #preview-img {
+      width: 100%; border-radius: 3px; margin-top: 10px;
+      border: 1px solid var(--border2); display: none;
+    }
+
+    /* Buttons */
+    .btn {
+      display: block; width: 100%;
+      padding: 10px 16px;
+      font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px;
+      text-transform: uppercase; cursor: pointer; border-radius: 3px;
+      border: 1px solid; transition: all 0.15s; text-align: center;
+    }
+    .btn-primary {
+      background: var(--accent); color: var(--bg); border-color: var(--accent);
+      font-weight: 700;
+    }
+    .btn-primary:hover { background: #33ddff; border-color: #33ddff; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-ghost {
+      background: transparent; color: var(--text2); border-color: var(--border2);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn { width: auto; flex: 1; }
+
+    /* Stats */
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-box {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 3px; padding: 10px;
+    }
+    .stat-value {
+      font-size: 22px; font-weight: 700; color: var(--accent);
+      font-family: var(--font-mono); line-height: 1;
+    }
+    .stat-label { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* Legend */
+    .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* Log */
+    #log-area {
+      flex: 1; overflow-y: auto; padding: 12px 16px;
+      font-family: var(--font-mono); font-size: 10px; color: var(--text2);
+      line-height: 1.7;
+    }
+    .log-line { padding: 1px 0; }
+    .log-line.ok { color: var(--green); }
+    .log-line.err { color: var(--red); }
+    .log-line.info { color: var(--accent); }
+    .log-line.dim { color: var(--text3); }
+
+    /* ── 3D Viewport ── */
+    #viewport {
+      position: relative; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #three-canvas { display: block; width: 100% !important; height: 100% !important; }
+
+    #viewport-overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    #loading-msg {
+      font-family: var(--font-mono); color: var(--accent);
+      font-size: 13px; letter-spacing: 2px;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Corner decorations */
+    .corner { position: absolute; width: 16px; height: 16px; opacity: 0.4; }
+    .corner-tl { top: 16px; left: 16px; border-top: 1px solid var(--accent); border-left: 1px solid var(--accent); }
+    .corner-tr { top: 16px; right: 16px; border-top: 1px solid var(--accent); border-right: 1px solid var(--accent); }
+    .corner-bl { bottom: 16px; left: 16px; border-bottom: 1px solid var(--accent); border-left: 1px solid var(--accent); }
+    .corner-br { bottom: 16px; right: 16px; border-bottom: 1px solid var(--accent); border-right: 1px solid var(--accent); }
+
+    .viewport-label {
+      position: absolute; font-family: var(--font-mono); font-size: 10px;
+      color: var(--text3); letter-spacing: 2px;
+    }
+    .viewport-label.tl { top: 20px; left: 36px; }
+    .viewport-label.br { bottom: 20px; right: 36px; }
+
+    /* View controls */
+    #view-controls {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 6px; pointer-events: all;
+    }
+    .view-btn {
+      padding: 5px 10px; font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 1px; background: rgba(15,20,28,0.85); border: 1px solid var(--border2);
+      color: var(--text2); cursor: pointer; border-radius: 2px; transition: all 0.15s;
+    }
+    .view-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Right Panel ── */
+    #right-panel {
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    #materials-list {
+      flex: 1; overflow-y: auto; padding: 0 0 16px;
+    }
+
+    .mat-card {
+      margin: 8px 12px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 3px; overflow: hidden;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+    .mat-card:hover { border-color: var(--border2); }
+    .mat-card.selected { border-color: var(--accent); }
+
+    .mat-card-header {
+      padding: 8px 10px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mat-type-badge {
+      font-size: 9px; font-family: var(--font-mono); padding: 2px 5px;
+      border-radius: 2px; letter-spacing: 1px; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .mat-type-badge.load_bearing { background: rgba(255,68,85,0.15); color: var(--red); border: 1px solid rgba(255,68,85,0.3); }
+    .mat-type-badge.partition { background: rgba(0,230,118,0.12); color: var(--green); border: 1px solid rgba(0,230,118,0.25); }
+
+    .mat-len { font-size: 11px; color: var(--text3); font-family: var(--font-mono); margin-left: auto; }
+
+    .mat-recs { padding: 8px 10px; }
+    .mat-rec-row { 
+      display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-size: 11px;
+    }
+    .mat-rank { 
+      font-family: var(--font-mono); font-size: 9px; color: var(--text3);
+      background: var(--bg); border: 1px solid var(--border2);
+      width: 18px; height: 18px; border-radius: 2px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .mat-rank.rank1 { color: var(--yellow); border-color: rgba(255,215,64,0.4); }
+    .mat-name { flex: 1; font-weight: 600; color: var(--text); font-size: 12px; }
+    .mat-score-bar-wrap { width: 50px; height: 4px; background: var(--border); border-radius: 2px; }
+    .mat-score-bar { height: 100%; border-radius: 2px; background: var(--accent); }
+    .mat-score-val { font-family: var(--font-mono); font-size: 9px; color: var(--text3); width: 30px; text-align: right; }
+
+    .mat-explain {
+      padding: 6px 10px 8px;
+      font-size: 11px; color: var(--text2); line-height: 1.5;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .mat-card.selected .mat-explain { display: block; }
+    .mat-explain strong { color: var(--accent); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    /* Empty state */
+    .empty-state {
+      padding: 40px 20px; text-align: center;
+      color: var(--text3); font-size: 11px; font-family: var(--font-mono);
+      line-height: 2;
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed; pointer-events: none; z-index: 999;
+      background: var(--bg2); border: 1px solid var(--border2);
+      padding: 6px 10px; font-family: var(--font-mono); font-size: 10px;
+      color: var(--text); border-radius: 3px; display: none;
+      max-width: 200px; line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <div class="logo">ASIS<span> // v1.0</span></div>
+  <div class="header-divider"></div>
+  <div class="header-tag">Autonomous Structural Intelligence System</div>
+  <div class="header-spacer"></div>
+  <div class="status-dot" id="status-dot"></div>
+  <div class="status-label" id="status-label">OFFLINE</div>
+</div>
+
+<div id="app">
+  <!-- LEFT PANEL -->
+  <div id="left-panel">
+    <div class="panel-section">
+      <div class="panel-title">Input</div>
+      <div id="upload-zone">
+        <input type="file" id="file-input" accept="image/*">
+        <div class="upload-icon">⬡</div>
+        <div class="upload-text">Drop floor plan image</div>
+        <div class="upload-sub">PNG / JPG / BMP accepted</div>
+        <img id="preview-img" alt="preview">
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-analyze" disabled>▶ Analyze</button>
+        <button class="btn btn-ghost" id="btn-sample">Sample</button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Stats</div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="stat-walls">—</div>
+          <div class="stat-label">Walls</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-rooms">—</div>
+          <div class="stat-label">Rooms</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-lb">—</div>
+          <div class="stat-label">Load-Bearing</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-pt">—</div>
+          <div class="stat-label">Partition</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Legend</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#ff4455"></div><span style="font-size:12px">Load-bearing wall</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#00e676"></div><span style="font-size:12px">Partition wall</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#1e3d5a;border:1px solid #2a5070"></div><span style="font-size:12px">Floor slab</span></div>
+    </div>
+
+    <div class="panel-title" style="padding:12px 16px 0">System Log</div>
+    <div id="log-area"></div>
+  </div>
+
+  <!-- 3D VIEWPORT -->
+  <div id="viewport">
+    <canvas id="three-canvas"></canvas>
+    <div id="viewport-overlay">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+      <div class="viewport-label tl">3D // STRUCTURAL MODEL</div>
+      <div class="viewport-label br">THREE.JS RENDERER</div>
+      <div id="loading-msg">AWAITING INPUT</div>
+    </div>
+    <div id="view-controls">
+      <button class="view-btn" id="view-iso">ISO</button>
+      <button class="view-btn" id="view-top">TOP</button>
+      <button class="view-btn" id="view-front">FRONT</button>
+      <button class="view-btn" id="view-reset">RESET</button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="panel-section">
+      <div class="panel-title">Material Analysis</div>
+      <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">
+        Click a wall card to see full explanation
+      </div>
+    </div>
+    <div id="materials-list">
+      <div class="empty-state">No analysis yet.<br>Upload an image or<br>load the sample plan.</div>
+    </div>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>

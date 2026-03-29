@@ -1,0 +1,289 @@
+{
+  "meta": {
+    "source": "sample",
+    "image_size": [
+      800,
+      600
+    ],
+    "wall_count": 14,
+    "room_count": 13,
+    "scale": 0.05
+  },
+  "walls_2d": [
+    [
+      50,
+      50,
+      750,
+      50
+    ],
+    [
+      750,
+      50,
+      750,
+      550
+    ],
+    [
+      750,
+      550,
+      50,
+      550
+    ],
+    [
+      50,
+      550,
+      50,
+      50
+    ]
+  ],
+  "classified_walls": [
+    {
+      "coords": [
+        50,
+        50,
+        750,
+        50
+      ],
+      "type": "load_bearing",
+      "length": 700.0
+    },
+    {
+      "coords": [
+        750,
+        50,
+        750,
+        550
+      ],
+      "type": "load_bearing",
+      "length": 500.0
+    },
+    {
+      "coords": [
+        750,
+        550,
+        50,
+        550
+      ],
+      "type": "load_bearing",
+      "length": 700.0
+    },
+    {
+      "coords": [
+        50,
+        550,
+        50,
+        50
+      ],
+      "type": "load_bearing",
+      "length": 500.0
+    }
+  ],
+  "rooms": [
+    [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        796.0,
+        0.0
+      ],
+      [
+        796.0,
+        596.0
+      ],
+      [
+        0.0,
+        596.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    [
+      [
+        56.0,
+        56.0
+      ],
+      [
+        392.0,
+        56.0
+      ],
+      [
+        392.0,
+        192.0
+      ],
+      [
+        56.0,
+        192.0
+      ],
+      [
+        56.0,
+        56.0
+      ]
+    ]
+  ],
+  "walls_3d": [
+    {
+      "x1": 2.5,
+      "y1": 2.5,
+      "x2": 37.5,
+      "y2": 2.5,
+      "height": 3.0,
+      "thickness": 0.2,
+      "type": "load_bearing",
+      "length_m": 700.0
+    },
+    {
+      "x1": 37.5,
+      "y1": 2.5,
+      "x2": 37.5,
+      "y2": 27.5,
+      "height": 3.0,
+      "thickness": 0.2,
+      "type": "load_bearing",
+      "length_m": 500.0
+    },
+    {
+      "x1": 37.5,
+      "y1": 27.5,
+      "x2": 2.5,
+      "y2": 27.5,
+      "height": 3.0,
+      "thickness": 0.2,
+      "type": "load_bearing",
+      "length_m": 700.0
+    },
+    {
+      "x1": 2.5,
+      "y1": 27.5,
+      "x2": 2.5,
+      "y2": 2.5,
+      "height": 3.0,
+      "thickness": 0.2,
+      "type": "load_bearing",
+      "length_m": 500.0
+    }
+  ],
+  "rooms_3d": [
+    [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        39.8,
+        0.0
+      ],
+      [
+        39.8,
+        29.8
+      ],
+      [
+        0.0,
+        29.8
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ]
+  ],
+  "floor": {
+    "width": 40.0,
+    "depth": 30.0
+  },
+  "materials": {
+    "summary": {
+      "total_walls": 14,
+      "load_bearing_count": 10,
+      "partition_count": 4,
+      "primary_structural_material": "Red Brick",
+      "primary_partition_material": "AAC Blocks"
+    },
+    "wall_recommendations": [
+      {
+        "wall_coords": [
+          50,
+          50,
+          750,
+          50
+        ],
+        "wall_type": "load_bearing",
+        "length_m": 13.12,
+        "recommendations": [
+          {
+            "material": "RCC",
+            "score": 0.883,
+            "cost": "High",
+            "strength": "Very High",
+            "best_use": "Columns, slabs"
+          },
+          {
+            "material": "Steel Frame",
+            "score": 0.883,
+            "cost": "High",
+            "strength": "Very High",
+            "best_use": "Long spans (>5m)"
+          }
+        ],
+        "explanation": "This is a LOAD-BEARING wall and carries structural loads to the foundation. This is a long span (13.12m > 5m), so high-strength materials are critical. **RCC** is recommended as primary material (high strength, proven for structural walls). **Steel Frame** is a cost-effective alternative if budget is constrained."
+      },
+      {
+        "wall_coords": [
+          750,
+          50,
+          750,
+          550
+        ],
+        "wall_type": "load_bearing",
+        "length_m": 9.38,
+        "recommendations": [
+          {
+            "material": "RCC",
+            "score": 0.883,
+            "cost": "High",
+            "strength": "Very High",
+            "best_use": "Columns, slabs"
+          },
+          {
+            "material": "Steel Frame",
+            "score": 0.883,
+            "cost": "High",
+            "strength": "Very High",
+            "best_use": "Long spans (>5m)"
+          }
+        ],
+        "explanation": "This is a LOAD-BEARING wall and carries structural loads to the foundation. This is a long span (9.38m > 5m), so high-strength materials are critical. **RCC** is recommended as primary material (high strength, proven for structural walls). **Steel Frame** is a cost-effective alternative if budget is constrained."
+      },
+      {
+        "wall_coords": [
+          750,
+          550,
+          50,
+          550
+        ],
+        "wall_type": "load_bearing",
+        "length_m": 13.12,
+        "recommendations": [
+          {
+            "material": "RCC",
+            "score": 0.883,
+            "cost": "High",
+            "strength": "Very High",
+            "best_use": "Columns, slabs"
+          },
+          {
+            "material": "Steel Frame",
+            "score": 0.883,
+            "cost": "High",
+            "strength": "Very High",
+            "best_use": "Long spans (>5m)"
+          }
+        ],
+        "explanation": "This is a LOAD-BEARING wall and carries structural loads to the foundation. This is a long span (13.12m > 5m), so high-strength materials are critical. **RCC** is recommended as primary material (high strength, proven for structural walls). **Steel Frame** is a cost-effective alternative if budget is constrained."
+      }
+    ]
+  },
+  "_note": "Truncated for readability \u2014 full response contains all walls/rooms"
+}
