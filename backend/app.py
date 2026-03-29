@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from flask import Flask, request, jsonify, after_this_request
 from werkzeug.utils import secure_filename
 
@@ -36,23 +37,46 @@ def _build_response(parse_result):
     image_size = parse_result["image_size"]
     source = parse_result["source"]
 
-    geo_result = reconstruct_geometry(walls_raw, image_size)
+    raw_coords = [w["coords"] for w in walls_raw]
+    geo_result = reconstruct_geometry(raw_coords, image_size)
     rooms = geo_result["rooms"]
     classified_walls = geo_result["classified_walls"]
-    mat_result = recommend_materials(classified_walls)
+
+    walls_data = []
+    for i, w in enumerate(walls_raw):
+        base = classified_walls[i] if i < len(classified_walls) else None
+        wtype = base["type"] if base else w.get("type", "partition")
+        length = base["length"] if base else np.sqrt((w["coords"][2]-w["coords"][0])**2 + (w["coords"][3]-w["coords"][1])**2)
+        walls_data.append({
+            "coords": w["coords"],
+            "type": wtype,
+            "length": round(length, 1),
+            "windows": w.get("windows", [])
+        })
+
+    mat_result = recommend_materials(walls_data)
 
     scale = 0.05
     wall_height = 3.0
     wall_thickness = 0.2
 
     walls_3d = []
-    for w in classified_walls:
+    for w in walls_data:
         x1, y1, x2, y2 = w["coords"]
+        windows_3d = []
+        for win in w.get("windows", []):
+            wx1, wy1, wx2, wy2 = win
+            windows_3d.append({
+                "x1": round(wx1 * scale, 3), "y1": round(wy1 * scale, 3),
+                "x2": round(wx2 * scale, 3), "y2": round(wy2 * scale, 3)
+            })
+
         walls_3d.append({
             "x1": round(x1 * scale, 3), "y1": round(y1 * scale, 3),
             "x2": round(x2 * scale, 3), "y2": round(y2 * scale, 3),
             "height": wall_height, "thickness": wall_thickness,
             "type": w["type"], "length_m": w["length"],
+            "windows": windows_3d
         })
 
     rooms_3d = []
@@ -60,12 +84,17 @@ def _build_response(parse_result):
         rooms_3d.append([[round(c[0]*scale,3), round(c[1]*scale,3)] for c in room])
 
     w_px, h_px = image_size
+    windows_2d = [win for w in walls_data for win in w.get("windows", [])]
     return {
         "meta": {"source": source, "image_size": image_size,
-                 "wall_count": len(classified_walls), "room_count": len(rooms), "scale": scale},
-        "walls_2d": [w["coords"] for w in classified_walls],
-        "classified_walls": classified_walls,
-        "rooms": rooms, "walls_3d": walls_3d, "rooms_3d": rooms_3d,
+                 "wall_count": len(walls_data), "room_count": len(rooms), "scale": scale},
+        "walls": walls_data,
+        "walls_2d": [w["coords"] for w in walls_data],
+        "windows_2d": windows_2d,
+        "classified_walls": walls_data,
+        "rooms": rooms,
+        "walls_3d": walls_3d,
+        "rooms_3d": rooms_3d,
         "floor": {"width": round(w_px * scale, 2), "depth": round(h_px * scale, 2)},
         "materials": mat_result,
     }

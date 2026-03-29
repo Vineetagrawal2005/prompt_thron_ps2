@@ -122,6 +122,8 @@ function buildScene(data) {
   const walls3d = data.walls_3d;
   const floor   = data.floor;
 
+  const matWindow = new THREE.MeshStandardMaterial({ color: 0x1e90ff, roughness: 0.4, metalness: 0.2, transparent: true, opacity: 0.6 });
+
   // Floor slab
   const floorGeo = new THREE.BoxGeometry(floor.width, 0.15, floor.depth);
   const floorMesh = new THREE.Mesh(floorGeo, matFloor);
@@ -168,6 +170,29 @@ function buildScene(data) {
     lines.position.copy(mesh.position);
     lines.rotation.copy(mesh.rotation);
     buildingGroup.add(lines);
+
+    // Windows on this wall
+    if (w.windows && w.windows.length > 0) {
+      w.windows.forEach(win => {
+        const dxw = win.x2 - win.x1;
+        const dyw = win.y2 - win.y1;
+        const lenw = Math.sqrt(dxw * dxw + dyw * dyw);
+        if (lenw < 0.05) return;
+
+        const anglew = Math.atan2(dyw, dxw);
+        const winGeo = new THREE.BoxGeometry(lenw, 1.2, 0.05);
+        const winMesh = new THREE.Mesh(winGeo, matWindow);
+
+        winMesh.position.set(
+          (win.x1 + win.x2) / 2,
+          1.5,
+          (win.y1 + win.y2) / 2
+        );
+        winMesh.rotation.y = -anglew;
+        winMesh.castShadow = true;
+        buildingGroup.add(winMesh);
+      });
+    }
   });
 
   // Center the building group
@@ -178,7 +203,7 @@ function buildScene(data) {
 
   scene.add(buildingGroup);
   loadingMsg.style.display = 'none';
-  log('3D model built — ' + walls3d.length + ' walls rendered', 'ok');
+  log('3D model built — ' + walls3d.length + ' walls, windows integrated', 'ok');
 }
 
 // ─── Camera Presets ───────────────────────────────────────────────────────────
